@@ -7,34 +7,38 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom'
 import 'tachyons'
 
 //apollo@1
-// import { ApolloClient, ApolloProvider, createNetworkInterface } from 'react-apollo'
+import { ApolloClient, ApolloProvider, createNetworkInterface } from 'react-apollo'
 
 //apollo@2
 // import { ApolloLink } from 'apollo-link'
-import { setContext } from 'apollo-link-context';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloClient } from 'apollo-client';
-import { ApolloProvider } from 'react-apollo';
+// import { setContext } from 'apollo-link-context';
+// import { HttpLink } from 'apollo-link-http';
+// import { InMemoryCache } from 'apollo-cache-inmemory';
+// import { ApolloClient } from 'apollo-client';
+// import { ApolloProvider } from 'react-apollo';
 
 
-// const networkInterface = createNetworkInterface({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' })
-// networkInterface.use([{
-//   applyMiddleware (req, next) {
-//     if (!req.options.headers) {
-//       req.options.headers = {}
-//     }
+const networkInterface = createNetworkInterface({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' })
+networkInterface.use([{
+  applyMiddleware (req, next) {
+    if (!req.options.headers) {
+      req.options.headers = {}
+    }
 
-//     // get the authentication token from local storage if it exists
-//     if (localStorage.getItem('graphcoolToken')) {
-//       req.options.headers.authorization = `Bearer ${localStorage.getItem('graphcoolToken')}`
-//     }
-//     next()
-//   },
-// }])
-// const client = new ApolloClient({ networkInterface })
+    // get the authentication token from local storage if it exists
+    if (localStorage.getItem('graphcoolToken')) {
+      req.options.headers.authorization = `Bearer ${localStorage.getItem('graphcoolToken')}`
+    }
+    next()
+  },
+}])
+const client = new ApolloClient({ networkInterface })
 
+//New HttpLink vs createHttpLink
 // const httpLink = createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
+// const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
+
+//SetContext directly vs SetContext with new ApolloLink
 // const middlewareLink = setContext(() => ({
 //   headers: { 
 //     authorization: localStorage.getItem('graphcoolToken') || null,
@@ -49,25 +53,14 @@ import { ApolloProvider } from 'react-apollo';
 //   return forward(operation)
 // })
 
-import { ApolloLink } from 'apollo-link';
-import { createHttpLink } from 'apollo-link-http';
+//Creating client
+// const link = middlewareLink.concat(httpLink);
+// const client = new ApolloClient({
+//   link: link,
+//   cache: new InMemoryCache().restore(window.__APOLLO_STATE__),
+// });
 
-const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
-const middlewareLink = new ApolloLink((operation, forward) => {
-  operation.setContext({
-    headers: {
-      authorization: localStorage.getItem('graphcoolToken') || null
-    }
-  });
-  return forward(operation)
-})
-
-// use with apollo-client
-const link = middlewareLink.concat(httpLink);
-const client = new ApolloClient({
-  link: link,
-  cache: new InMemoryCache().restore(window.__APOLLO_STATE__),
-});
+//render component don't change
 ReactDOM.render((
     <ApolloProvider client={client}>
       <BrowserRouter>
