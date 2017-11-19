@@ -1,0 +1,3 @@
+targets:
+  facebook-tutorial-retry: shared-us-west-2/cj9uusqtdeoev0174b3o5z910
+  default: facebook-tutorial-retry
