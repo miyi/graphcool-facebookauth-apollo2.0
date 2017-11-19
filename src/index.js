@@ -10,9 +10,9 @@ import 'tachyons'
 // import { ApolloClient, ApolloProvider, createNetworkInterface } from 'react-apollo'
 
 //apollo@2
-// import { ApolloLink } from 'apollo-link'
-import { setContext } from 'apollo-link-context';
+import { ApolloLink } from 'apollo-link'
 import { HttpLink } from 'apollo-link-http';
+import { setContext } from 'apollo-link-context'
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { ApolloProvider } from 'react-apollo';
@@ -34,40 +34,39 @@ import { ApolloProvider } from 'react-apollo';
 // }])
 // const client = new ApolloClient({ networkInterface })
 
-// const httpLink = createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
-// const middlewareLink = setContext(() => ({
-//   headers: { 
-//     authorization: localStorage.getItem('graphcoolToken') || null,
-//   }
-// }));
+//Apollo2.0
+
+const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
 // const middlewareLink = new ApolloLink((operation, forward) => {
-//   operation.setContext({
+//   console.log('setting context header')
+//   operation.setContext(context => ({
+//     ...context,
 //     headers: {
 //       authorization: localStorage.getItem('graphcoolToken') || null
 //     }
-//   });
+//   }));
 //   return forward(operation)
 // })
 
-import { ApolloLink } from 'apollo-link';
-import { createHttpLink } from 'apollo-link-http';
-
-const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cj9uusqtdeoev0174b3o5z910' });
-const middlewareLink = new ApolloLink((operation, forward) => {
-  operation.setContext({
+const middlewareLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('graphcoolToken')
+  // return the headers to the context so httpLink can read them
+  return {
     headers: {
-      authorization: localStorage.getItem('graphcoolToken') || null
+      ...headers,
+      authorization: token ? `Bearer ${token}` : null,
     }
-  });
-  return forward(operation)
-})
+  }
+});
 
 // use with apollo-client
 const link = middlewareLink.concat(httpLink);
 const client = new ApolloClient({
   link: link,
-  cache: new InMemoryCache().restore(window.__APOLLO_STATE__),
+  cache: new InMemoryCache(),
 });
+
 ReactDOM.render((
     <ApolloProvider client={client}>
       <BrowserRouter>
